@@ -1,0 +1,6 @@
+/target
+/payloads
+/tools
+*.png
+*.ps1
+!botan-face-icon.png
