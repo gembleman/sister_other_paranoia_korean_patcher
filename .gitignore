@@ -3,4 +3,6 @@
 /tools
 *.png
 *.ps1
+*.md
 !botan-face-icon.png
+!README.md

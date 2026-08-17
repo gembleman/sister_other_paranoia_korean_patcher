@@ -1,7 +1,54 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+#[cfg(all(feature = "patcher", not(feature = "ui-check")))]
 mod engine;
+#[cfg(all(feature = "patcher", not(feature = "ui-check")))]
 mod payload;
+
+#[cfg(feature = "ui-check")]
+mod engine {
+    use std::path::{Path, PathBuf};
+    use std::sync::Arc;
+
+    #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+    pub enum Action {
+        Apply,
+        Restore,
+    }
+
+    #[derive(Clone, Debug)]
+    pub struct Config {
+        pub data_dir: PathBuf,
+        pub action: Action,
+        pub dry_run: bool,
+    }
+
+    pub fn discover_data_dir(_unused: &Path) -> PathBuf {
+        PathBuf::from("UI 체크 모드")
+    }
+
+    pub fn resolve_data_dir(_path: &Path) -> Option<PathBuf> {
+        None
+    }
+
+    pub fn validate(_config: &Config) -> Result<(), String> {
+        Ok(())
+    }
+
+    pub fn run(config: Config, log: Arc<dyn Fn(String) + Send + Sync>) -> Result<(), String> {
+        log("UI 체크 모드: 실제 파일은 변경되지 않습니다.".into());
+        log(format!(
+            "모의 작업: {}{} (대상: {})",
+            match config.action {
+                Action::Apply => "패치 적용",
+                Action::Restore => "원본 복원",
+            },
+            if config.dry_run { " (dry-run)" } else { "" },
+            config.data_dir.display()
+        ));
+        Ok(())
+    }
+}
 
 use native_windows_gui as nwg;
 use std::path::PathBuf;
@@ -136,15 +183,15 @@ impl PatcherUi {
             .parent(&ui.window)
             .build(&mut ui.log_box)?;
         nwg::Label::builder()
-            .text("오역 제보나 업데이트는")
-            .position((34, 518))
-            .size((186, 28))
+            .text("오역 제보나 업데이트 확인은")
+            .position((4, 518))
+            .size((210, 28))
             .parent(&ui.window)
             .build(&mut ui.footer_text)?;
         nwg::Label::builder()
-            .text("클릭")
+            .text(INFO_URL)
             .position((220, 518))
-            .size((100, 28))
+            .size((600, 28))
             .parent(&ui.window)
             .build(&mut ui.info_link)?;
         nwg::Notice::builder()
