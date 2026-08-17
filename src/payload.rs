@@ -6,9 +6,9 @@ use std::io::{BufWriter, Read, Seek, SeekFrom, Write};
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, OnceLock};
 
-use rust_embed::RustEmbed;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
+use include_assets::{include_dir, NamedArchive};
 use unity_asset_binary::asset::{SerializedFile, SerializedFileParser};
 use unity_asset_binary::bundle::{BundleLoadOptions, BundleParser};
 use unity_asset_binary::shared_bytes::SharedBytes;
@@ -27,9 +27,22 @@ use unity_asset_write::serialized_file::{
     SerializedFileEdits, SerializedFileSource, SerializedFileWriter,
 };
 
-#[derive(RustEmbed)]
-#[folder = "payloads/"]
-struct EmbeddedPayloads;
+fn embedded_payloads() -> &'static NamedArchive {
+    static ARCHIVE: OnceLock<NamedArchive> = OnceLock::new();
+
+    ARCHIVE.get_or_init(|| {
+        NamedArchive::load(include_dir!(
+            "payloads/",
+            compression = "zstd",
+            level = 19
+        ))
+    })
+}
+
+fn embedded_payload(name: &str) -> Option<&'static [u8]> {
+    let key = name.replace('/', std::path::MAIN_SEPARATOR_STR);
+    embedded_payloads().get(&key)
+}
 
 #[derive(Debug, Deserialize)]
 pub struct Manifest {
@@ -84,9 +97,9 @@ pub fn load_manifest() -> Result<&'static Manifest, String> {
 
     MANIFEST
         .get_or_init(|| {
-            let asset = EmbeddedPayloads::get("manifest.json")
+            let asset = embedded_payload("manifest.json")
                 .ok_or("내장 payload manifest를 찾을 수 없습니다.")?;
-            let manifest: Manifest = serde_json::from_slice(asset.data.as_ref())
+            let manifest: Manifest = serde_json::from_slice(asset)
                 .map_err(|e| format!("payload manifest 파싱 실패: {e}"))?;
             if manifest.version != 1 {
                 return Err(format!("지원하지 않는 payload 버전: {}", manifest.version));
@@ -124,18 +137,18 @@ fn payload_bytes(parts: &[String], expected: &str) -> Result<Vec<u8>, String> {
         } else {
             Cow::Owned(format!("blobs/{name}"))
         };
-        let part = EmbeddedPayloads::get(&key)
+        let part = embedded_payload(key.as_ref())
             .ok_or_else(|| format!("내장 payload blob이 없습니다: {key}"))?;
         total_len = total_len
-            .checked_add(part.data.len())
+            .checked_add(part.len())
             .ok_or("payload 크기가 주소 공간을 초과합니다.")?;
         embedded_parts.push(part);
     }
     let mut bytes = Vec::with_capacity(total_len);
     let mut hasher = Sha256::new();
     for part in embedded_parts {
-        hasher.update(part.data.as_ref());
-        bytes.extend_from_slice(part.data.as_ref());
+        hasher.update(part);
+        bytes.extend_from_slice(part);
     }
     let actual = digest_hex(hasher.finalize());
     if !expected.is_empty() && !actual.eq_ignore_ascii_case(expected) {
@@ -155,12 +168,12 @@ fn payload_len(parts: &[String], expected: &str) -> Result<usize, String> {
         } else {
             Cow::Owned(format!("blobs/{name}"))
         };
-        let part = EmbeddedPayloads::get(&key)
+        let part = embedded_payload(key.as_ref())
             .ok_or_else(|| format!("내장 payload blob이 없습니다: {key}"))?;
         total_len = total_len
-            .checked_add(part.data.len())
+            .checked_add(part.len())
             .ok_or("payload 크기가 주소 공간을 초과합니다.")?;
-        hasher.update(part.data.as_ref());
+        hasher.update(part);
     }
     let actual = digest_hex(hasher.finalize());
     if !expected.is_empty() && !actual.eq_ignore_ascii_case(expected) {
