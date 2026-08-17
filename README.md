@@ -5,6 +5,8 @@
 [Sister Other Paranoia](https://store.steampowered.com/app/4240150) 게임에 한국어 지원을 추가하는 프로그램입니다.  
 UI, 이미지, 폰트, 게임 내 대사를 한국어로 변경합니다.
 
+초기 화면에 일본어를 선택하면 됩니다.
+
 현재 지원하는 게임의 BuildID는 24746532입니다.
 
 CLI, GUI 지원. 인자 없이 실행하면 GUI가 열립니다.  
