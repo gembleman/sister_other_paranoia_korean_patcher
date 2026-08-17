@@ -1,5 +1,6 @@
 fn main() {
     println!("cargo:rerun-if-changed=assets/botan-face-icon.ico");
+    println!("cargo:rerun-if-changed=payloads/");
 
     if std::env::var_os("CARGO_CFG_WINDOWS").is_some() {
         let mut resource = winres::WindowsResource::new();
