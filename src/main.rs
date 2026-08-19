@@ -60,7 +60,7 @@ use std::thread;
 use engine::{Action, Config};
 
 const INFO_URL: &str = "https://github.com/gembleman/sister_other_paranoia_korean_patcher";
-const VERSION: &str = "v1.0.1 by gemble";
+const VERSION: &str = "v1.0.2 by gemble";
 
 #[derive(Default)]
 struct PatcherUi {
@@ -83,6 +83,7 @@ struct PatcherUi {
     dialog: nwg::FileDialog,
     footer_text: nwg::Label,
     info_link: nwg::Label,
+    credit_text: nwg::Label,
 }
 
 impl PatcherUi {
@@ -95,7 +96,7 @@ impl PatcherUi {
             .size(Some((32, 32)))
             .build(&mut ui.app_icon)?;
         nwg::Window::builder()
-            .size((800, 595))
+            .size((800, 625))
             .center(true)
             .title(&format!("Sister Other Paranoia 한국어 패치 {VERSION}"))
             .flags(nwg::WindowFlags::WINDOW | nwg::WindowFlags::VISIBLE)
@@ -194,6 +195,12 @@ impl PatcherUi {
             .size((600, 28))
             .parent(&ui.window)
             .build(&mut ui.info_link)?;
+        nwg::Label::builder()
+            .text("도와주신 분) 로고 & 메뉴 식질 : 무스스")
+            .position((4, 550))
+            .size((760, 28))
+            .parent(&ui.window)
+            .build(&mut ui.credit_text)?;
         nwg::Notice::builder()
             .parent(&ui.window)
             .build(&mut ui.notice)?;
