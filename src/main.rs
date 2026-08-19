@@ -60,7 +60,7 @@ use std::thread;
 use engine::{Action, Config};
 
 const INFO_URL: &str = "https://github.com/gembleman/sister_other_paranoia_korean_patcher";
-const VERSION: &str = "v1.0 by gemble";
+const VERSION: &str = "v1.0.1 by gemble";
 
 #[derive(Default)]
 struct PatcherUi {

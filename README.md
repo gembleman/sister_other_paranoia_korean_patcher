@@ -1,6 +1,6 @@
 # Sister Other Paranoia 한국어 패치
 
-[다운로드](https://github.com/gembleman/sister_other_paranoia_korean_patcher/releases/tag/v1.0)
+[다운로드](https://github.com/gembleman/sister_other_paranoia_korean_patcher/releases/tag/v1.0.1)
 
 [Sister Other Paranoia](https://store.steampowered.com/app/4240150) 게임에 한국어 지원을 추가하는 프로그램입니다.  
 UI, 이미지, 폰트, 게임 내 대사를 한국어로 변경합니다.
